@@ -14,7 +14,7 @@ import java.util.*;
  * the words/phrases/suffixes to search for with an empty line terminating the user input. For example:
  *
  * java cp3.ass01.suffixtrie.SuffixTrieDriver
- * data/Frank02.txt
+ * SuffixTrie/data/Frank02.txt
  * and
  * the
  * , the
@@ -38,6 +38,8 @@ public class SuffixTrieDriver {
             ss.offer(suffix);
             suffix = in.nextLine();
         }
+        
+        in.close();
 
         SuffixTrie st = SuffixTrie.readInFromFile(fileName);
 

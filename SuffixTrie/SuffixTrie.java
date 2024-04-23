@@ -1,3 +1,7 @@
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.util.Scanner;
+
 public class SuffixTrie {
 
     private SuffixTrieNode root = new SuffixTrieNode();
@@ -11,13 +15,11 @@ public class SuffixTrie {
      * @return the final node inserted
      */
     public SuffixTrieNode insert(String str, int startPosition) {
-
         SuffixTrieNode pointer = root;
-        int stringIndex = 0;
-
         char[] processedStr = str.toCharArray();
 
         for(int i = 0; i < processedStr.length; i++){
+            pointer = root;
             for(int j = i; j < processedStr.length; j++){
                 if(pointer.getChild(processedStr[j]) == null) {
 
@@ -27,13 +29,11 @@ public class SuffixTrie {
                 }
 
                 pointer = pointer.getChild(processedStr[j]);
-                pointer.addData(startPosition, stringIndex);
+                pointer.addData(startPosition, i);
 
             }
         }
-
-
-        return null;
+        return pointer;
     }
 
     /**
@@ -43,7 +43,15 @@ public class SuffixTrie {
      * @return  the final node in the (sub)string
      */
     public SuffixTrieNode get(String str) {
-        return null;
+        
+            char[] chars = str.toCharArray();
+            SuffixTrieNode pointer = root;
+            for(char letter: chars){
+                if(pointer.getChild(letter) == null) return null;
+                pointer = pointer.getChild(letter);
+            }
+    
+            return pointer;
     }
 
     /**
@@ -58,6 +66,24 @@ public class SuffixTrie {
      * @return 
      */
     public static SuffixTrie readInFromFile(String fileName) {
-        return new SuffixTrie();
+        SuffixTrie newSuffixTrie = new SuffixTrie();
+        try{
+            Scanner s = new Scanner(new FileReader(fileName));
+            int sentenceNum = 0; 
+
+            while (s.hasNextLine()){
+                String[] sentences = s.nextLine().split("^.[.?!]\s");
+                for(String sentence: sentences){
+                    newSuffixTrie.insert(sentence, sentenceNum++);
+                }
+            }
+            
+            s.close();
+            return newSuffixTrie;
+
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+        
     }
 }

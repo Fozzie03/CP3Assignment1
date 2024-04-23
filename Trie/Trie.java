@@ -22,13 +22,16 @@ public class Trie {
     public TrieNode insert(String str, TrieData data) {
         // hint you can use str.toCharArray() to get the char[] of characters
 
-        char[] chars = str.toCharArray();
+        char[] chars = str.toLowerCase().toCharArray();
         TrieNode pointer = this.root;
 
         for(char letter: chars){
             //Come back to: Constructor might change in the near future
-            TrieNode newNode = new TrieNode();
-            pointer.addChild(letter, newNode);
+            if(pointer.getChild(letter) == null){
+                TrieNode newNode = new TrieNode();
+                pointer.addChild(letter, newNode);
+            }
+        
             pointer = pointer.getChild(letter);
         }
         pointer.setTerminal(true);
@@ -80,7 +83,6 @@ public class Trie {
      */
     public TrieNode get(String str) {
         TrieNode pointer = getNode(str);
-
         if(pointer != null && pointer.isTerminal()) return pointer;
         return null;
     }
@@ -113,17 +115,17 @@ public class Trie {
         return words;
     }
 
-    private void findWords(List<String> foundWords, String currentWord, Character letter, TrieNode pointer){
+    private void findWords(List<String> foundWords, String prefix, Character letter, TrieNode pointer){
         //Add Letter
-        currentWord += letter;
+        prefix += letter;
         pointer = pointer.getChild(letter);
 
         if(pointer.getNumChildren() != 0){
             for(Character child: pointer.getChildren()){
-                findWords(foundWords, currentWord, child, pointer);
+                findWords(foundWords, prefix, child, pointer);
             }
         }
-        if(pointer.isTerminal() && !foundWords.contains(currentWord)) foundWords.add(currentWord);
+        if(pointer.isTerminal() && !foundWords.contains(prefix)) foundWords.add(prefix);
     }
 
     /**
@@ -200,6 +202,7 @@ public class Trie {
                 dictionary.insert(dictionaryEntry[1],new TrieData(Integer.parseInt(dictionaryEntry[2]), dictionaryEntry[1]));
             }
 
+            s.close();
             return dictionary;
         } catch (FileNotFoundException e) {
             throw new RuntimeException(e);
