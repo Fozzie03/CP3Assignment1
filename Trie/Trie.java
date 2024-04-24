@@ -1,8 +1,5 @@
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
-import java.sql.Array;
 import java.util.*;
 
 import static java.util.Collections.sort;
@@ -103,10 +100,8 @@ public class Trie {
         if(pointer != null){
             if(pointer.isTerminal()) words.add(prefix);     //Are we starting on a Terminal Word?
 
-            //Go Through Every Branch
-            for(Character letter: pointer.getChildren()){
-                findWords(words, prefix, letter, pointer);
-            }
+            //Iterate Through Every Branch
+            for(Character letter: pointer.getChildren()) findWords(words, prefix, letter, pointer);
 
             //Return Words
             sort(words);
@@ -138,27 +133,11 @@ public class Trie {
      */
     public String getMostFrequentWordWithPrefix(String prefix) {
         TrieNode pointer = getNode(prefix);
-        TrieData frequent = new TrieData(0);
         if (pointer == null){
             return prefix;
         }
-
-        if (pointer.isTerminal()) {
-            frequent.setFrequency(pointer.getFrequency());
-            frequent.setWord(prefix);
-        }
-
-        if(pointer.getNumChildren() != 0){
-            for(Character child: pointer.getChildren()){
-
-                TrieNode childPointer = pointer.getChild(child);
-                TrieData newData = findMostFrequent(childPointer);
-
-                if(newData.getFrequency() > frequent.getFrequency()) frequent = newData;
-            }
-        }
-
-        return frequent.getWord();
+        
+        return findMostFrequent(pointer).getWord();
     }
 
 

@@ -16,7 +16,8 @@ public class SuffixTrie {
      */
     public SuffixTrieNode insert(String str, int startPosition) {
         SuffixTrieNode pointer = root;
-        char[] processedStr = str.toCharArray();
+        char[] processedStr = str.toLowerCase().toCharArray();
+        // if(startPosition == 53) System.out.println(str);
 
         for(int i = 0; i < processedStr.length; i++){
             pointer = root;
@@ -70,13 +71,17 @@ public class SuffixTrie {
         try{
             Scanner s = new Scanner(new FileReader(fileName));
             int sentenceNum = 0; 
+            String fileIn = "";
 
             while (s.hasNextLine()){
-                String[] sentences = s.nextLine().split("^.[.?!]\s");
+                fileIn = fileIn.concat(s.nextLine());
+            }
+            String[] sentences = fileIn.split("[.?!]\\s*");
                 for(String sentence: sentences){
+                    // System.out.println(sentence);
+                    // System.out.println(sentence.length());
                     newSuffixTrie.insert(sentence, sentenceNum++);
                 }
-            }
             
             s.close();
             return newSuffixTrie;
