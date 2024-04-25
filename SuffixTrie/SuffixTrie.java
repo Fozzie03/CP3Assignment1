@@ -69,20 +69,13 @@ public class SuffixTrie {
     public static SuffixTrie readInFromFile(String fileName) {
         SuffixTrie newSuffixTrie = new SuffixTrie();
         try{
-            Scanner s = new Scanner(new FileReader(fileName));
+            Scanner s = new Scanner(new FileReader(fileName)).useDelimiter("[.?!]\\s*");
             int sentenceNum = 0; 
             String fileIn = "";
 
-            while (s.hasNextLine()){
-                fileIn = fileIn.concat(s.nextLine());
+            while (s.hasNext()){
+                newSuffixTrie.insert(s.next(), sentenceNum++);
             }
-            String[] sentences = fileIn.split("[.?!]\\s*");
-                for(String sentence: sentences){
-                    // System.out.println(sentence);
-                    // System.out.println(sentence.length());
-                    newSuffixTrie.insert(sentence, sentenceNum++);
-                }
-            
             s.close();
             return newSuffixTrie;
 

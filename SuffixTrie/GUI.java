@@ -11,104 +11,183 @@ import java.awt.Font;
 import java.awt.ScrollPane;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.util.Scanner;
 import java.util.concurrent.Flow;
-
 import javax.swing.text.BadLocationException;
+import javax.swing.text.Highlighter;
 import javax.swing.GroupLayout.*;
 
 public class GUI {
-            private JFrame frame;
-            private JTextArea output;
-            private String query;
-            private JPanel loadoutPanel;
-            private JPanel mainPanel;
-            public GUI() {
-                initialize();
-                displayOne();
-                
+    private JFrame frame;
+    private JPanel mainPanel;
+    private SuffixTrie st;
+    private JTextArea output = new JTextArea();
+    private String query = "";
+    private String fileName = "data/FrankChap02.txt";
+    private int queryNum = 0;
+    private int fileLine = 0;
+    private SuffixTrieNode queryResult;
+    private String[] resultFormatted;
+    private Scanner in;
+    private JScrollPane scrollPane = new JScrollPane();
+
+    public GUI() {
+        initialize();
+        displayOne();
+    }
+    
+
+    public void initialize(){
+        frame = new JFrame();
+        frame.setTitle("Suffix Trie GUI"); //Duh
+        frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE); //Once every frame is closed, turn everything off :)
+        frame.setSize(500,400); //Set Size
+        frame.setResizable(false);
+        frame.setLayout(new BorderLayout(10,10));
+        frame.setLocationRelativeTo(null);
+    }
+
+    private void displayOne(){
+        
+        //Create Panel To Hold Components
+        mainPanel = new JPanel();
+        mainPanel.setLayout(new FlowLayout(FlowLayout.CENTER, 10, 5));
+        mainPanel.setSize(300,400);
+
+        //Create File Label 
+        JLabel brief = new JLabel("Enter file name (Loaded: " + fileName +"):");
+        
+        mainPanel.add(brief);
+
+        //Create File Text Field
+        JTextField fileField = new JTextField(15);
+        fileField.setText("data/FrankChap02.txt");
+        fileField.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                fileName = fileField.getText();
+                fileLine = 0;
+                queryNum = 0;
+                brief.setText("Enter file name (Loaded: " + fileName +"):");
+                mainPanel.repaint();
             }
+        });
+        mainPanel.add(fileField);
 
-            public void initialize(){
-                frame = new JFrame();
-                frame.setTitle("Suffix Trie GUI"); //Duh
-                frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE); //Once every frame is closed, turn everything off :)
-                frame.setSize(500,400); //Set Size
-                frame.setResizable(false);
-                frame.setLayout(new BorderLayout(10,10));
-                frame.setLocationRelativeTo(null);
+
+        //Create search query Text Field
+        mainPanel.add(new JLabel("Enter Search Query:"));
+        JTextField queryField = new JTextField(10);
+        queryField.setText("and");
+        queryField.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                generateOutput(fileField, queryField);
             }
+        });
+        mainPanel.add(queryField);
 
-            private void displayOne(){
-                
-                //Create Panel To Hold Components
-                mainPanel = new JPanel();
-                mainPanel.setLayout(new FlowLayout(FlowLayout.CENTER, 10, 5));
-                mainPanel.setSize(300,400);
-
-                //Create Label 
-                JLabel brief = new JLabel("Enter file name (e.g. data/Frank01.txt):");
-                mainPanel.add(brief);
-
-                //Create Text Field
-                JTextField textField = new JTextField(20);
-                textField.setText("data/FrankChap02.txt");
-                textField.addActionListener(new ActionListener() {
-                    public void actionPerformed(ActionEvent e){
-                        
-                        System.out.println(mainPanel.getComponentCount());
-                        while (mainPanel.getComponentCount() > 2) {
-                            mainPanel.remove(mainPanel.getComponentCount()-1);
-                        }
-                        mainPanel.repaint();
-                        importFile(textField.getText());
-                    }
-                });
-                mainPanel.add(textField);
-
-
-                frame.add(mainPanel, BorderLayout.CENTER);
-                
-                frame.setVisible(true); //User can see the window
+        JButton nextButton = new JButton("Next");
+        nextButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                generateOutput(fileField, queryField);
             }
+            
+        });
+        nextButton.setFocusable(false);
+        mainPanel.add(nextButton);
 
-            private void importFile(String fileName){
-                SuffixTrie st = SuffixTrie.readInFromFile(fileName);
-
-                mainPanel.add(new JLabel("Enter Search Query:"));
-
-                JTextField queryField = new JTextField(10);
-                queryField.setText("i");
-                queryField.addActionListener(new ActionListener() {
-                    public void actionPerformed(ActionEvent e){
-                        query = queryField.getText();
-                        SuffixTrieNode result = st.get(query);
-                        output = new JTextArea("["+ query + "]: " + result);
-                        output.setEditable(false);
-                        output.setSize(400, 400);
-                        output.setLineWrap(true);
-                        output.setFont(new Font("Sans-serif", Font.PLAIN, 12));
+        frame.add(mainPanel);
+        frame.setVisible(true); //User can see the window
+    }
 
 
-                        
-                        JScrollPane scrollPane = new JScrollPane(output);
-                        System.out.println(mainPanel.getComponentCount());
-                        if(mainPanel.getComponentCount() == 5)mainPanel.remove(mainPanel.getComponentCount()-1);
-                        scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-                        scrollPane.setPreferredSize(new Dimension(400, 300));
-                        mainPanel.add(scrollPane);
-
-                        frame.setVisible(true); //User can see the window
-                    }
-                });
-
-                mainPanel.add(queryField);
-
-                frame.setVisible(true); //User can see the window
-
-            }
-            public static void main(String[] args) {
-                new GUI();
-            }
-
+    private void generateOutput(JTextField fileField, JTextField queryField){
+        if(!fileName.equals(fileField.getText()) || st == null){
+            st = null;
+            st = SuffixTrie.readInFromFile(fileField.getText());
         }
 
+        if(!query.equals(queryField.getText()) || queryNum == 0){
+            query = queryField.getText();
+            scannerInit(fileField);
+        }
+
+        if(queryNum == resultFormatted.length){
+            queryNum = 0;
+            fileLine = 0;
+        }
+
+        String currentSearch[] = resultFormatted[queryNum++].split("\\.");
+        if(!in.hasNext())   scannerInit(fileField);
+        while(fileLine-1 != Integer.parseInt(currentSearch[0])){
+            output.setText(in.next());
+            fileLine++;
+        }
+
+
+        int pos = Integer.parseInt(currentSearch[1]);
+
+        output.setSelectionStart(pos);
+        output.setSelectionEnd(pos+query.length());
+        output.setEditable(false);
+        output.setSize(400, 400);
+        output.setLineWrap(true);
+        output.setFont(new Font("Sans-serif", Font.PLAIN, 12));
+        mainPanel.add(output);
+
+        scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+        scrollPane.setPreferredSize(new Dimension(400, 300));
+        scrollPane.removeAll();
+        scrollPane.add(output);
+
+        mainPanel.add(scrollPane);
+        
+        output.requestFocus();
+
+        frame.setVisible(true);
+        frame.repaint();
+    }
+
+    void scannerInit(JTextField fileField){
+        queryResult = st.get(query);
+
+        queryNum = 0;
+        fileLine = 0;
+
+        try {
+            in = new Scanner(new FileReader(fileField.getText())).useDelimiter("[.?!]\\s*");
+        } catch (FileNotFoundException e1) {
+            throw new RuntimeException(e1);
+        }
+
+        resultFormatted = queryResult.toString().split("\\[[^\\]]]*\\]")[0].replaceAll("\\[|\\]","").split(", ");
+    }
+
+    public static void main(String[] args) {
+        new GUI();
+    }
+
+    
+}
+
+
+                        // queryField.addActionListener(new ActionListener() {
+                //     public void actionPerformed(ActionEvent e){
+
+
+                        
+                //         JScrollPane scrollPane = new JScrollPane(output);
+                //         System.out.println(mainPanel.getComponentCount());
+                //         if(mainPanel.getComponentCount() == 5)mainPanel.remove(mainPanel.getComponentCount()-1);
+                //         scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+                //         scrollPane.setPreferredSize(new Dimension(400, 300));
+                //         mainPanel.add(scrollPane);
+                //         output.requestFocus();
+
+                //         
+                //     }
+                // });

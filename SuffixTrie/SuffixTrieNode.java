@@ -8,8 +8,6 @@ public class SuffixTrieNode {
 
     private Map<Character, SuffixTrieNode> children = new HashMap<>();
 
-    int numChildren = 0;
-
     public SuffixTrieNode getChild(char label) {
         return(children.get(label));
     }
