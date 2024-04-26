@@ -1,23 +1,14 @@
 import javax.swing.*;
-import javax.swing.event.DocumentEvent;
-
-import javax.swing.event.DocumentListener;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
-import java.awt.ScrollPane;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.util.Scanner;
-import java.util.concurrent.Flow;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.Highlighter;
-import javax.swing.GroupLayout.*;
 
 public class GUI {
     private JFrame frame;
@@ -31,7 +22,7 @@ public class GUI {
     private SuffixTrieNode queryResult;
     private String[] resultFormatted;
     private Scanner in;
-    private JScrollPane scrollPane = new JScrollPane();
+    private JScrollPane scrollPane = new JScrollPane(output);
 
     public GUI() {
         initialize();
@@ -116,16 +107,17 @@ public class GUI {
             scannerInit(fileField);
         }
 
-        if(queryNum == resultFormatted.length){
-            queryNum = 0;
-            fileLine = 0;
-        }
-
         String currentSearch[] = resultFormatted[queryNum++].split("\\.");
-        if(!in.hasNext())   scannerInit(fileField);
+
+
+        if(!in.hasNext() && queryNum == resultFormatted.length)   scannerInit(fileField);
+
         while(fileLine-1 != Integer.parseInt(currentSearch[0])){
-            output.setText(in.next());
-            fileLine++;
+            String line = in.next().trim();
+            if(line.length() != 0) {
+                output.setText(line);
+                fileLine++;
+            }
         }
 
 
@@ -134,15 +126,12 @@ public class GUI {
         output.setSelectionStart(pos);
         output.setSelectionEnd(pos+query.length());
         output.setEditable(false);
-        output.setSize(400, 400);
         output.setLineWrap(true);
         output.setFont(new Font("Sans-serif", Font.PLAIN, 12));
-        mainPanel.add(output);
 
-        scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-        scrollPane.setPreferredSize(new Dimension(400, 300));
-        scrollPane.removeAll();
-        scrollPane.add(output);
+         
+        scrollPane.setPreferredSize(new Dimension(400, 200));
+        scrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
 
         mainPanel.add(scrollPane);
         
@@ -159,7 +148,7 @@ public class GUI {
         fileLine = 0;
 
         try {
-            in = new Scanner(new FileReader(fileField.getText())).useDelimiter("[.?!]\\s*");
+            in = new Scanner(new FileReader(fileField.getText())).useDelimiter("[.?!]\\s+|\\n");
         } catch (FileNotFoundException e1) {
             throw new RuntimeException(e1);
         }
@@ -173,21 +162,3 @@ public class GUI {
 
     
 }
-
-
-                        // queryField.addActionListener(new ActionListener() {
-                //     public void actionPerformed(ActionEvent e){
-
-
-                        
-                //         JScrollPane scrollPane = new JScrollPane(output);
-                //         System.out.println(mainPanel.getComponentCount());
-                //         if(mainPanel.getComponentCount() == 5)mainPanel.remove(mainPanel.getComponentCount()-1);
-                //         scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-                //         scrollPane.setPreferredSize(new Dimension(400, 300));
-                //         mainPanel.add(scrollPane);
-                //         output.requestFocus();
-
-                //         
-                //     }
-                // });
