@@ -97,6 +97,7 @@ public class GUI {
 
 
     private void generateOutput(JTextField fileField, JTextField queryField){
+
         if(!fileName.equals(fileField.getText()) || st == null){
             st = null;
             st = SuffixTrie.readInFromFile(fileField.getText());
@@ -110,7 +111,7 @@ public class GUI {
         String currentSearch[] = resultFormatted[queryNum++].split("\\.");
 
 
-        if(!in.hasNext() && queryNum == resultFormatted.length)   scannerInit(fileField);
+        if(!in.hasNext() || queryNum == resultFormatted.length)   scannerInit(fileField);
 
         while(fileLine-1 != Integer.parseInt(currentSearch[0])){
             String line = in.next().trim();
@@ -119,6 +120,7 @@ public class GUI {
                 fileLine++;
             }
         }
+        if(Integer.parseInt(currentSearch[0]) == -1) output.setText("");
 
 
         int pos = Integer.parseInt(currentSearch[1]);
@@ -143,6 +145,11 @@ public class GUI {
 
     void scannerInit(JTextField fileField){
         queryResult = st.get(query);
+
+        if (queryResult == null){
+            queryResult = new SuffixTrieNode();
+            queryResult.addData(-1, -1);
+        }
 
         queryNum = 0;
         fileLine = 0;
